@@ -1,0 +1,20 @@
+base_url "https://api.exemplo.com"
+
+scenario "login básico"
+case "sucesso"
+request
+method GET
+path "/login"
+query { user: "joao", pass: "123" }
+expect
+status 200
+json_has "token"
+
+case "senha errada"
+request
+method GET
+path "/login"
+query { user: "joao", pass: "errado" }
+expect
+status 401
+json_eq "error" "invalid_credentials"
