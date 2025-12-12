@@ -1,17 +1,24 @@
 ## DSL para Teste de API REST
 
-Visamos nesse projeto escrever uma DSL simples para descrever testes de caixa preta de APIREST e um gerador que converte essa DSL em código Python de teste, só vamos demonstrar aqui, não chamaremos HTTPs reais, para termos a possibilidade de rodar em qualquer máquina.
+## Equipe
+    - Erasmo Alves
+    - Everton Ferreira
+    - Gabriel Henrique
 
-## Estrutura
+## Motivação
+    Em testes de API REST é comum repetir sempre o mesmo padrão de escrever código para chamar endpoints, montar parâmetros, checar status de resposta e validar campos de JSON. Isso costuma ser verboso, pouco declarativo e espalha a lógica de teste em várias funções de uma linguagem de propósito geral(ex: Python com requests e pytest).
 
-    - ApiTest.g4: gramática ANTLR4 da DSL
-    - ApiTestLexer.py, ApiTestParser.py, ApiVisitor.py, ApiTestListener.py: arquivos gerados pelo ANTLR.
-    - ApiTestCustomVisitor.py: visitor que percorre a árvore sintática e constrói o modelo em Python.
-    - model.py: classes ApiSpec, Scenario e Case.
-    - generator.py: gera o arquivo test_api_generated.py a partir do modelo.
-    - main.py: compilador da DSL, que lê um .apitest e chama o gerador.
-    - exemplo.apitest: exemplo de especificação de testes.
-    - test_api_generated.py: exemplo de código gerado.
+    Este projeto propõe u,a linguagem de domínio específico(DSL) para descrever testes de caixa-preta de API REST de forma declarativa. Em vez de escrever código para cada teste, descreve-se cenários, casos de teste, requisições e expectativas em uma arquivo .apitest. Em seguida, um compilador gera automaticamente um arquivo Python de testes.
+
+    A DSL é independente de ferramenta e foi construída com ANTLR4 + Python, seguindo a estrutura de um compilador: análise léxica, análise sintática, construção de árvore sintática, visitor orientado a sintaxe e gerador de código.
+
+## Visão geral da linguagem
+    A linguagem descreve testes de API REST com os seguintes conceitos principais:
+    - base_url: URL base da API
+    - scenario: um agrupamento lógico de casos de teste
+    - case: um caso de teste específico dentro de um cenário
+    - request: bloco que descreve como a requisição HTTP deve ser feita
+    - expect: bloco que descreve as expectativas sobre a resposta(status e conteúdo JSON)
 
 ## Sintaxe da DSL(exemplo)
 
@@ -36,26 +43,71 @@ Visamos nesse projeto escrever uma DSL simples para descrever testes de caixa pr
     status 401
     json_eq "error" "invalid_credentials"
 
+    Principais construções:
+
+    base_url "...": define a URL base.
+
+    scenario "nome": inicia um cenário.
+
+    case "nome": define um caso de teste dentro do cenário atual.
+
+    request seguido de:
+
+    method GET|POST|PUT|DELETE
+
+    path "/caminho"
+
+    query { chave: valor, ... } com valores string ou inteiros.
+
+    expect seguido de:
+
+    status <código HTTP>
+
+    json_has "campo" para exigir que um campo exista no JSON.
+    
+    json_eq "campo" "valorEsperado" para exigir que um campo tenha o valor esperado.
+
+## Estrutura
+    - ApiTest.g4: gramática ANTLR4 da DSL (regras léxicas e sintáticas).
+    - ApiTestLexer.py, ApiTestParser.py, ApiTestVisitor.py, ApiTestListener.py: arquivos gerados automaticamente pelo ANTLR a partir da gramática.
+    - ApiTestCustomVisitor.py: visitor customizado que percorre a árvore sintática e constrói um modelo em Python (ApiSpec, Scenario, Case).​
+    - model.py: definição das classes de modelo (ApiSpec, Scenario, Case).
+    - generator.py: recebe um ApiSpec e gera o arquivo test_api_generated.py com código Python de teste (modo simulado, sem chamadas HTTP reais).​
+    - main.py: “compilador” da DSL, que lê um arquivo .apitest, executa o parser, o visitor e chama o gerador.
+    - exemplo.apitest: exemplo de especificação de testes na DSL.
+    - test_api_generated.py: arquivo de código de teste gerado a partir de exemplo.apitest.
+    - requirements.txt: dependências Python do projeto.
+    - .venv/ (opcional): ambiente virtual Python.​
+
 ## Como executar
+1. Requisitos:
+    - Python 3 instalado
+    - Java + ANTLR4
 
-1. Criar ambiente virtual e instalar dependências:
+2. Criar ambiente virtual e instalar dependências:
+    No diretório do projeto:
+    - python -m venv .venv
+    No Windows(PowerShell):
+    - . venv/Scripts/Activate.ps1
+    Depois de ativar o ambiente:
+    - pip install -r requirements.txt
 
-    python -m venv .venv
+3. Gerar/regerar o parser:
+    Se necessário regerar os arquivos do ANTLR a partir de ApiTest.g4, execute o comando apropriado para sua instalação de ANTLR. Exemplo:
+    - antlr4-Dlanguage=Python3=ApiTest.g4-visitor
+    O comando irá gerar:
+    - ApiTestLexer.py
+    - ApiTestParser.py
+    - ApiTestVisitor.py
+    - ApiTestListener.py
+    Esses arquivos estão na mesma pasta que main.py.
 
-    WIndows PowerShell:
-    . venv/Scripts/Activate.ps1
+4. Compilar o arquivo da DSL para código de teste:
+    O arquivo de entrada padrão é exemplo.apitest, que deve estar na mesma pasta de main.py. Para gerar o código de teste:
+    - python main.py
 
-    pip install -r requirements.txt
+5. Executar o arquivo de teste gerado:
+    - python test_api_generated.py
 
-2. Gerar/regerar o parser:
-
-    antlr4-Dlanguage=Python3 =ApiTest.g4-visitor
-
-3. Compilar o arquivo da DSL para código de teste:
-
-    python main.py
-
-4. Executar o arquivo de teste gerado:
-
-    python test_api_generated.py
+    O arquivo gerado executa os casos de teste em modo demonstração: em vez de chamar uma API real, ele simula respostas e imprime na tela as informações de cada teste (nome do cenário, nome do caso, status esperado, campos esperados etc.).
 

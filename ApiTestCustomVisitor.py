@@ -16,9 +16,8 @@ class ApiTestCustomVisitor(ApiTestVisitor):
         return ApiSpec(base_url=base_url, scenarios=scenarios)
 
     def visitBaseDecl(self, ctx: ApiTestParser.BaseDeclContext):
-        # base_url STRING NEWLINE+
         text = ctx.STRING().getText()
-        return text[1:-1]  # remove aspas
+        return text[1:-1] 
 
     def visitScenarioDecl(self, ctx: ApiTestParser.ScenarioDeclContext):
         name = ctx.STRING().getText()[1:-1]
@@ -45,9 +44,7 @@ class ApiTestCustomVisitor(ApiTestVisitor):
         }
 
         for item_ctx in ctx.requestItem():
-            # Cada item pode ser methodDecl, pathDecl ou queryDecl
             val = self.visit(item_ctx)
-            # visit(item_ctx) vai retornar um dicionário parcial
             for k, v in val.items():
                 data[k] = v
 
@@ -99,7 +96,6 @@ class ApiTestCustomVisitor(ApiTestVisitor):
 
         for item_ctx in ctx.expectItem():
             val = self.visit(item_ctx)
-            # val pode ser {"status": 200}, {"json_has": "token"} ou ("campo","valor")
             if "status" in val:
                 data["status"] = val["status"]
             if "json_has" in val:

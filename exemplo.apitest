@@ -18,3 +18,48 @@ query { user: "joao", pass: "errado" }
 expect
 status 401
 json_eq "error" "invalid_credentials"
+
+scenario "cadastro de usuário"
+case "sucesso"
+request
+method POST
+path "/users"
+query { user: "maria", pass: "abc123" }
+expect
+status 201
+json_has "id"
+
+case "usuario já existente"
+request
+method POST
+path "/users"
+query { user: "maria", pass: "abc123" }
+expect
+status 409
+json_eq "error" "user_already_exists"
+
+scenario "atualização de usuário"
+case "alterar senha"
+request
+method PUT
+path "/users/1"
+query { pass: "nova_senha" }
+expect
+status 200
+json_has "updated_at"
+
+case "deletar existente"
+request
+method DELETE
+path "/users/1"
+expect
+status 204
+
+case "deletar inexistente"
+request
+method DELETE
+path "/users/999"
+expect
+status 404
+json_eq "error" "user_not_found"
+
