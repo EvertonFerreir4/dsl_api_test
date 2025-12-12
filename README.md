@@ -6,8 +6,9 @@
     - Gabriel Henrique
 
 ## Motivação
+
     Em testes de API REST é comum repetir sempre o mesmo padrão de escrever código para chamar endpoints, montar parâmetros, checar status de resposta e validar campos de JSON. Isso costuma ser verboso, pouco declarativo e espalha a lógica de teste em várias funções de uma linguagem de propósito geral(ex: Python com requests e pytest).
-    Este projeto propõe u,a linguagem de domínio específico(DSL) para descrever testes de caixa-preta de API REST de forma declarativa. Em vez de escrever código para cada teste, descreve-se cenários, casos de teste, requisições e expectativas em uma arquivo .apitest. Em seguida, um compilador gera automaticamente um arquivo Python de testes.
+    Este projeto propõe uma linguagem de domínio específico(DSL) para descrever testes de caixa-preta de API REST de forma declarativa. Em vez de escrever código para cada teste, descreve-se cenários, casos de teste, requisições e expectativas em uma arquivo .apitest. Em seguida, um compilador gera automaticamente um arquivo Python de testes.
     A DSL é independente de ferramenta e foi construída com ANTLR4 + Python, seguindo a estrutura de um compilador: análise léxica, análise sintática, construção de árvore sintática, visitor orientado a sintaxe e gerador de código.
 
 ## Visão geral da linguagem
